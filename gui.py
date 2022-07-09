@@ -1,9 +1,6 @@
 from tkinter import *
 
-
-# this is temporary
-def process_query(query):
-    return [1, 2, 3]
+from search import process_query
 
 
 def open_document(doc_id):
