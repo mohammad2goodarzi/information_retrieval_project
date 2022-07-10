@@ -2,6 +2,7 @@ import os
 import re
 from collections import defaultdict
 import json
+from typing import Dict
 
 
 def get_processed_document_id():
@@ -45,7 +46,6 @@ def process_documents():
         file.writelines(map(convert_to_str_line, unprocessed_doc_id))
     # ToDo: save posting list
     store_postings(posting_list)
-    return posting_list
 
 
 def eliminate(data: str, eliminator: list):
@@ -107,5 +107,15 @@ def tokenize_document(data: str, doc_id: int, posting_list: defaultdict):
 
 
 def store_postings(posting_list: defaultdict):
-    with open("store.json", "w", encoding="utf-8") as outfile:
+    with open("store.json", "r+", encoding="utf-8") as outfile:
+        old_posting_list = json.load(outfile)
+        update_posting_list(old_posting_list, posting_list)
+        outfile.seek(0)  # to clear old data
         json.dump(posting_list, outfile, ensure_ascii=False)
+
+
+def update_posting_list(old_posting_list: Dict[str, list], posting_list: Dict[str, list]):
+    common_keys = set(old_posting_list.keys()).intersection(set(posting_list.keys()))
+    for key in common_keys:
+        posting_list[key].extend(old_posting_list[key])
+    posting_list.update(old_posting_list)
