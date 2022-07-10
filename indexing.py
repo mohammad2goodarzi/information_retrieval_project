@@ -2,10 +2,10 @@ import os
 import re
 from collections import defaultdict
 import json
-from typing import Dict
+from typing import Dict, List
 
 
-def get_processed_document_id():
+def get_processed_document_id() -> List[str]:
     """
     return the name of processed documents.
     """
@@ -14,7 +14,7 @@ def get_processed_document_id():
         return doc_ids.strip().split('\n')
 
 
-def get_unprocessed_doc_id():
+def get_unprocessed_doc_id() -> List[str]:
     """
     return the name of unprocessed documents.
     """
@@ -30,7 +30,8 @@ def get_unprocessed_doc_id():
     return unprocessed_doc_id
 
 
-def convert_to_str_line(doc_id: int):
+def convert_to_str_line(doc_id: int) -> str:
+    """convert an integer to a string and append a newline character to the end"""
     return str(doc_id) + '\n'
 
 
@@ -44,15 +45,15 @@ def process_documents():
     posting_list = get_dictionary(unprocessed_doc_id)
     with open('processed_document.txt', 'a') as file:
         file.writelines(map(convert_to_str_line, unprocessed_doc_id))
-    # ToDo: save posting list
     store_postings(posting_list)
 
 
-def eliminate(data: str, eliminator: list):
+def eliminate(data: str, eliminator: list) -> str:
+    """Find all the elements in the eliminator list and replace them with an empty string"""
     return re.sub('|'.join(eliminator), '', data)
 
 
-def get_dictionary(unprocessed_doc_id):
+def get_dictionary(unprocessed_doc_id: List[str]) -> Dict[str, list]:
     """
     :param unprocessed_doc_id: list of unprocessed documents id
     :return: dictionary of tokens.
@@ -69,7 +70,7 @@ def get_dictionary(unprocessed_doc_id):
     return posting_list
 
 
-def tokenize_document(data: str, doc_id: int, posting_list: defaultdict):
+def tokenize_document(data: str, doc_id: int, posting_list: Dict[str, list]) -> Dict[str, list]:
     """
     :param data: content of a document.
     :param doc_id: ID of a document
@@ -106,7 +107,8 @@ def tokenize_document(data: str, doc_id: int, posting_list: defaultdict):
     return posting_list
 
 
-def store_postings(posting_list: defaultdict):
+def store_postings(posting_list: Dict[str, list]):
+    """Save new posting list"""
     with open("store.json", "r+", encoding="utf-8") as outfile:
         old_posting_list = json.load(outfile)
         update_posting_list(old_posting_list, posting_list)
@@ -115,6 +117,10 @@ def store_postings(posting_list: defaultdict):
 
 
 def update_posting_list(old_posting_list: Dict[str, list], posting_list: Dict[str, list]):
+    """
+    Update the shared key values in the given dictionaries
+    Add the non-shared key values to the old posting list
+    """
     common_keys = set(old_posting_list.keys()).intersection(set(posting_list.keys()))
     for key in common_keys:
         posting_list[key].extend(old_posting_list[key])
