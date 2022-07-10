@@ -1,4 +1,6 @@
 from indexing import process_documents
+import os
+import json
 
 
 def normalize_prefix_suffix(word: str):
@@ -29,6 +31,8 @@ def search(word):
     """
     # posting_lists = process_documents()
     # posting_lists = {}
+    with open("store.json", "r", encoding='utf-8') as read_file:
+        posting_lists = json.load(read_file)
     word = normalize_prefix_suffix(word)
     if word not in posting_lists:
         return 'no result found.'
@@ -54,9 +58,14 @@ def process_query(query):
     else:
         return search(query)
 
+if(os.stat("store.json").st_size == 0):
+    # print("1111")
+    posting_lists = process_documents()
+# else:
+#     with open("store.json", "r", encoding='utf-8') as read_file:
+#         posting_lists = json.load(read_file)
 
-posting_lists = process_documents()  # this is temporary
-if __name__ == '__main__':
-    print("جهان", process_query("چهان"))
-    print("بهداشت", process_query("بهداشت"))
-    print("بهداشت and جهان", process_query("بهداشت and جهان"))
+
+
+# if __name__ == '__main__':
+#     print("جهان", process_query("جهان"))
