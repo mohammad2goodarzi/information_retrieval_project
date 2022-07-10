@@ -29,8 +29,6 @@ def search(word):
     """
     Take a word and return the list of document IDs containing that word.
     """
-    # posting_lists = process_documents()
-    # posting_lists = {}
     with open("store.json", "r", encoding='utf-8') as read_file:
         posting_lists = json.load(read_file)
     word = normalize_prefix_suffix(word)
@@ -58,14 +56,9 @@ def process_query(query):
     else:
         return search(query)
 
-if(os.stat("store.json").st_size == 0):
-    # print("1111")
-    posting_lists = process_documents()
-# else:
-#     with open("store.json", "r", encoding='utf-8') as read_file:
-#         posting_lists = json.load(read_file)
 
-
-
-# if __name__ == '__main__':
-#     print("جهان", process_query("جهان"))
+process_documents()
+if __name__ == '__main__':
+    print("مدیسون", process_query("مدیسون"))
+    print("ستایش", process_query("ستایش"))
+    print("جهان and بهداشت", process_query("جهان and بهداشت"))
