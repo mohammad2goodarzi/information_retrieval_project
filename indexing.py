@@ -40,13 +40,12 @@ def process_documents():
     save new posting lists in the file.
     """
     unprocessed_doc_id = get_unprocessed_doc_id()
-    postingList = get_dictionary(unprocessed_doc_id)
+    posting_list = get_dictionary(unprocessed_doc_id)
     with open('processed_document.txt', 'a') as file:
         file.writelines(map(convert_to_str_line, unprocessed_doc_id))
     # ToDo: save posting list
-    storePostings(postingList)
-    print(postingList)
-    return postingList
+    store_postings(posting_list)
+    return posting_list
 
 
 def eliminate(data: str, eliminator: list):
@@ -60,21 +59,21 @@ def get_dictionary(unprocessed_doc_id):
     """
     with open('project_files/elim.txt') as eliminator_file:
         eliminator = eliminator_file.read().strip().split()
-        postingList = defaultdict(list)
+        posting_list = defaultdict(list)
         for doc_id in unprocessed_doc_id:
             file = open(f'txtfiles/{doc_id}.txt', encoding="utf-8")
             data = file.read().strip()
             data = eliminate(data, eliminator)
-            postingList = tokenize_document(data, int(doc_id), postingList)
+            posting_list = tokenize_document(data, int(doc_id), posting_list)
 
-    return postingList
+    return posting_list
 
 
-def tokenize_document(data: str, doc_id: int, postingList: defaultdict):
+def tokenize_document(data: str, doc_id: int, posting_list: defaultdict):
     """
     :param data: content of a document.
     :param doc_id: ID of a document
-    :param postingList: the whole dictionary of tokens.
+    :param posting_list: the whole dictionary of tokens.
     :return: updated dictionary.
     """
     prefix_file = open('project_files/normal_prefix.txt', encoding='utf-8')
@@ -103,11 +102,10 @@ def tokenize_document(data: str, doc_id: int, postingList: defaultdict):
 
     tokens = set(filter(is_not_stop_word, map(normalize_prefix_suffix, data.split())))
     for token in tokens:
-        postingList[token].append(doc_id)
-    return postingList
+        posting_list[token].append(doc_id)
+    return posting_list
 
 
-def storePostings(postingList:defaultdict):
+def store_postings(posting_list: defaultdict):
     with open("store.json", "w", encoding="utf-8") as outfile:
-        json.dump(postingList, outfile, ensure_ascii=False)
-
+        json.dump(posting_list, outfile, ensure_ascii=False)
