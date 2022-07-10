@@ -3,6 +3,9 @@ import os
 import json
 
 
+NOT_FOUND = 'no result found.'
+
+
 def normalize_prefix_suffix(word: str):
     """
     Take a word and remove its prefix and suffix.
@@ -33,7 +36,7 @@ def search(word):
         posting_lists = json.load(read_file)
     word = normalize_prefix_suffix(word)
     if word not in posting_lists:
-        return 'no result found.'
+        return NOT_FOUND
     results = posting_lists[word]
     return results
 
@@ -47,12 +50,24 @@ def process_query(query):
         word1, word2 = query.split('and')
         word1 = word1.strip()
         word2 = word2.strip()
-        return list(set(search(word1)).intersection(set(search(word2))))
+        result1 = search(word1)
+        result2 = search(word2)
+        final_result = list(set(result1).intersection(set(result2)))
+        if result1 == NOT_FOUND or result2 == NOT_FOUND or not final_result:
+            return NOT_FOUND
+        else:
+            return final_result
     if 'or' in query:
         word1, word2 = query.split('or')
         word1 = word1.strip()
         word2 = word2.strip()
-        return list(set(search(word1)).union(set(search(word2))))
+        result1 = search(word1)
+        result2 = search(word2)
+        final_result = list(set(result1).union(set(result2)))
+        if (not final_result) or (result1 == NOT_FOUND and result2 == NOT_FOUND):
+            return NOT_FOUND
+        else:
+            return final_result
     else:
         return search(query)
 
