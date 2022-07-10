@@ -24,6 +24,7 @@ def onclick(event):
 def func():
     destroy_children_widget(result_frame)
     query = entry.get()
+    query = query.replace(chr(1610), chr(1740))
     results = process_query(query)
     for result in results:
         the_label = Label(result_frame, text=str(result))
