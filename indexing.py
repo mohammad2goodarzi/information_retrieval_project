@@ -101,9 +101,15 @@ def tokenize_document(data: str, doc_id: int, posting_list: Dict[str, list]) -> 
     def is_not_stop_word(word):
         return word not in stop_words
 
+    tf=0
     tokens = set(filter(is_not_stop_word, map(normalize_prefix_suffix, data.split())))
     for token in tokens:
         posting_list[token].append(doc_id)
+        for data in data.split():
+            if token == data:
+                tf=tf+1
+        computeTf(doc_id, token, tf)
+
     return posting_list
 
 
@@ -125,3 +131,8 @@ def update_posting_list(old_posting_list: Dict[str, list], posting_list: Dict[st
     for key in common_keys:
         posting_list[key].extend(old_posting_list[key])
     posting_list.update(old_posting_list)
+
+def computeTf(doc_id,token,count):
+    doc{doc_id} = defaultdict
+    doc_id.update(token,count)
+    return doc_id
