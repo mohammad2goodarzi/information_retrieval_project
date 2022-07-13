@@ -1,5 +1,8 @@
-from indexing import process_documents
-import os
+from collections import defaultdict
+from math import log10
+from typing import Dict
+
+from indexing import process_documents, get_processed_document_id
 import json
 
 
@@ -37,8 +40,62 @@ def search(word):
     word = normalize_prefix_suffix(word)
     if word not in posting_lists:
         return NOT_FOUND
-    results = posting_lists[word]
+    this_word_posting_list = posting_lists[word]
+
+    def get_document_id():
+        document_id = []
+        for i in this_word_posting_list:
+            document_id.append(i[0])
+        return document_id
+
+    results = get_document_id()
     return results
+
+
+def calculate_tf_idf(query):
+
+    def normalize_vector(vector: Dict[str, float]) -> Dict[str, float]:
+        total = sum(map(lambda x: x ** 2, vector.values())) ** 0.5
+        norm = {k: vector[k] / total for k in vector}
+        return norm
+
+    with open("store.json", "r", encoding='utf-8') as read_file:
+        posting_lists = json.load(read_file)
+    document_number = len(get_processed_document_id())
+
+    query_weight = {}
+    query_terms = query.split()
+    for term in set(query_terms):
+        normalized_term = normalize_prefix_suffix(term)
+        df = len(posting_lists[normalized_term])
+        idf = log10(document_number/df)
+        tf = query_terms.count(term)
+        if tf == 0:
+            weight_tf = 0
+        else:
+            weight_tf = 1 + log10(tf)
+        weight = weight_tf * idf
+        query_weight[normalized_term] = weight
+
+    document_weight = defaultdict(dict)
+    for term in set(query_terms):
+        normalized_term = normalize_prefix_suffix(term)
+        this_term_posting_list = posting_lists[normalized_term]
+        for document_id, tf in this_term_posting_list:
+            if tf == 0:
+                weight_tf = 0
+            else:
+                weight_tf = 1 + log10(tf)
+            document_weight[document_id].update({term: weight_tf})
+
+    normalized_query_weight = normalize_vector(query_weight)
+    score = {}
+    for document_id in document_weight:
+        normalized_document_weight = normalize_vector(document_weight[document_id])
+        tf_idf = {k: normalized_query_weight[k] * normalized_document_weight.get(k, 0) for k in normalized_query_weight}
+        score[document_id] = sum(tf_idf.values())
+    score = dict(sorted(score.items(), key=lambda item: item[1], reverse=True))
+    return list(score.keys())[:10]
 
 
 def process_query(query):
@@ -68,12 +125,18 @@ def process_query(query):
             return NOT_FOUND
         else:
             return final_result
-    else:
+    if ' ' not in query:
         return search(query)
+    else:
+        return calculate_tf_idf(query)
 
 
 process_documents()
 if __name__ == '__main__':
-    print("مدیسون", process_query("مدیسون"))
-    print("ستایش", process_query("ستایش"))
-    print("جهان and بهداشت", process_query("جهان and بهداشت"))
+    # print("اعتراض", process_query("اعتراض"))
+    # print("ستایش", process_query("ستایش"))
+    print("جهان ستایش بهداشت", process_query("جهان ستایش بهداشت"))
+    print("اعتراض زهرا محسن", process_query("اعتراض زهرا محسن"))
+    print("ناصرالدین زهرا محسن", process_query("ناصرالدین زهرا محسن"))
+
+
