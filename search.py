@@ -52,23 +52,24 @@ def search(word):
     return results
 
 
+def normalize_vector(vector: Dict[str, float]) -> Dict[str, float]:
+    """Take a vector and return its normalization"""
+    total = sum(map(lambda x: x ** 2, vector.values())) ** 0.5
+    norm = {k: vector[k] / total for k in vector}
+    return norm
+
+
 def calculate_tf_idf(query):
-
-    def normalize_vector(vector: Dict[str, float]) -> Dict[str, float]:
-        total = sum(map(lambda x: x ** 2, vector.values())) ** 0.5
-        norm = {k: vector[k] / total for k in vector}
-        return norm
-
     with open("store.json", "r", encoding='utf-8') as read_file:
         posting_lists = json.load(read_file)
-    document_number = len(get_processed_document_id())
+    number_of_documents = len(get_processed_document_id())
 
     query_weight = {}
     query_terms = query.split()
     for term in set(query_terms):
         normalized_term = normalize_prefix_suffix(term)
         df = len(posting_lists[normalized_term])
-        idf = log10(document_number/df)
+        idf = log10(number_of_documents/df)
         tf = query_terms.count(term)
         if tf == 0:
             weight_tf = 0
